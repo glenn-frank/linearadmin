@@ -1,0 +1,52 @@
+{
+  "name": "Simple Blog",
+  "description": "A simple blog application with posts, comments, and user authentication",
+  "template": {
+    "deploymentTarget": "both",
+    "localDatabaseType": "sqlite",
+    "databaseType": "forge-postgresql",
+    "useForgeStorage": true,
+    "enableAIDependencies": true,
+    "startDevelopment": true,
+    "rerunExistingIssues": false,
+    "createForgeSite": false,
+    "createNewProject": true,
+    "features": ["auth", "profile", "dashboard", "upload", "docs"],
+    "repoSubfolder": "frontend"
+  },
+  "customIssues": [
+    {
+      "title": "Create Post Model and Migration",
+      "description": "Create Post model with title, content, author, published_at fields",
+      "priority": 2,
+      "labels": ["backend", "database"],
+      "category": "backend",
+      "complexity": "medium"
+    },
+    {
+      "title": "Create Comment System",
+      "description": "Implement nested comments with moderation support",
+      "priority": 3,
+      "labels": ["backend", "feature"],
+      "category": "backend",
+      "complexity": "high"
+    },
+    {
+      "title": "Build Blog Post Editor",
+      "description": "Rich text editor with markdown support and image uploads",
+      "priority": 3,
+      "labels": ["frontend", "editor"],
+      "category": "frontend",
+      "complexity": "high"
+    },
+    {
+      "title": "Implement Blog Homepage",
+      "description": "Display recent posts with pagination and categories",
+      "priority": 2,
+      "labels": ["frontend", "ui"],
+      "category": "frontend",
+      "complexity": "medium"
+    }
+  ]
+}
+

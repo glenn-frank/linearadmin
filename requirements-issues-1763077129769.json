@@ -1,0 +1,355 @@
+[
+  {
+    "title": "Implement BangerVision iPad App",
+    "description": "The current project aims to build an iPad app that connects to an iPhone camera stream, displays the video feed, overlays a configurable grid, allows users to define the dance floor area, and performs motion-based energy detection per grid cell. The app will initially use video files for testing. The desired outcome is a fully functional app that meets these requirements, providing a seamless user experience while ensuring performance and scalability.",
+    "requirements": [
+      "Develop the app using Swift and SwiftUI.",
+      "Utilize AVFoundation for video playback and CoreImage for image processing.",
+      "Ensure the app is compatible with iPadOS."
+    ],
+    "acceptance_criteria": [
+      "The app successfully compiles and runs on an iPad.",
+      "Basic UI elements are displayed correctly.",
+      "The app connects to a video source and displays the feed."
+    ],
+    "technical_notes": [
+      "Follow the recommended file structure for organization.",
+      "Ensure modular design for each component.",
+      "Use background threads for image processing tasks."
+    ]
+  },
+  {
+    "title": "Create BVVideoSource Protocol",
+    "description": "The BVVideoSource protocol will serve as an abstraction for different video sources. It will define methods for starting and stopping the video feed, as well as a callback for frame updates. This will allow for flexibility in switching between different video sources without altering the main app logic.",
+    "requirements": [
+      "Define the BVVideoSource protocol with methods: onFrame(CGImage), start(), and stop().",
+      "Ensure that all video source implementations conform to this protocol."
+    ],
+    "acceptance_criteria": [
+      "The BVVideoSource protocol is defined and compiles without errors.",
+      "At least one implementation of the protocol is created and tested."
+    ],
+    "technical_notes": [
+      "Use Swift's protocol-oriented programming features.",
+      "Document the protocol methods clearly for future implementations."
+    ]
+  },
+  {
+    "title": "Implement BVFileVideoSource Class",
+    "description": "The BVFileVideoSource class will implement the BVVideoSource protocol to play video files using AVPlayerItemVideoOutput. It will emit CGImage frames for rendering. This class is essential for testing the app's video playback functionality before integrating live sources.",
+    "requirements": [
+      "Implement the start() method to begin video playback.",
+      "Implement the stop() method to halt video playback.",
+      "Emit CGImage frames through the onFrame callback."
+    ],
+    "acceptance_criteria": [
+      "Video files can be played back without errors.",
+      "CGImage frames are emitted correctly and can be rendered."
+    ],
+    "technical_notes": [
+      "Utilize AVPlayer and AVPlayerItemVideoOutput for video playback.",
+      "Ensure proper memory management to avoid leaks during playback."
+    ]
+  },
+  {
+    "title": "Implement BVImageSource Class",
+    "description": "The BVImageSource class will provide a static image output at a configurable frame rate. This will allow developers to test the app's functionality without needing a video source. The class will conform to the BVVideoSource protocol.",
+    "requirements": [
+      "Implement the start() method to begin outputting the static image.",
+      "Implement the stop() method to cease output.",
+      "Emit CGImage frames of the static image at the specified frame rate."
+    ],
+    "acceptance_criteria": [
+      "The static image is displayed correctly at the configured frame rate.",
+      "The start and stop methods function as expected."
+    ],
+    "technical_notes": [
+      "Consider using a timer to control the frame rate.",
+      "Ensure thread safety when accessing the image data."
+    ]
+  },
+  {
+    "title": "Implement BVStubLiveSource Class",
+    "description": "The BVStubLiveSource class will simulate a live camera feed for testing purposes. It will conform to the BVVideoSource protocol and will later be replaced with actual live streaming sources. This class is crucial for early development stages.",
+    "requirements": [
+      "Implement the start() method to simulate a live feed.",
+      "Implement the stop() method to halt the simulated feed.",
+      "Emit CGImage frames that represent a simulated live camera feed."
+    ],
+    "acceptance_criteria": [
+      "The simulated live feed can be started and stopped without issues.",
+      "CGImage frames are emitted correctly to mimic a live camera."
+    ],
+    "technical_notes": [
+      "Use random or pre-defined images to simulate the live feed.",
+      "Ensure that the frame rate is adjustable for testing purposes."
+    ]
+  },
+  {
+    "title": "Create VideoRenderView for Displaying Video Frames",
+    "description": "The VideoRenderView will be a SwiftUI view responsible for displaying incoming CGImage frames efficiently. This component is critical for rendering the video feed and must be optimized for performance.",
+    "requirements": [
+      "Create a SwiftUI view that accepts CGImage frames.",
+      "Implement efficient rendering techniques to minimize latency.",
+      "Ensure the view updates correctly when new frames are received."
+    ],
+    "acceptance_criteria": [
+      "The VideoRenderView displays frames without noticeable lag.",
+      "The view updates correctly with new frames."
+    ],
+    "technical_notes": [
+      "Consider using a CALayer for rendering to improve performance.",
+      "Ensure that the view is responsive and updates on the main thread."
+    ]
+  },
+  {
+    "title": "Implement GridOverlayView for Configurable Grid",
+    "description": "The GridOverlayView will draw a configurable grid overlay on top of the video feed. Users will be able to specify the number of rows and columns, and the grid will adjust according to the displayed video frame size.",
+    "requirements": [
+      "Create a SwiftUI view that draws a grid based on user-defined rows and columns.",
+      "Ensure the grid adapts to the size of the displayed video frame.",
+      "Allow for dynamic updates to the grid configuration."
+    ],
+    "acceptance_criteria": [
+      "The grid is displayed correctly over the video feed.",
+      "Users can change the number of rows and columns dynamically."
+    ],
+    "technical_notes": [
+      "Use SwiftUI's drawing capabilities to render the grid.",
+      "Ensure that the grid updates efficiently without performance degradation."
+    ]
+  },
+  {
+    "title": "Create FloorRegionSelectorView for Dance Floor Area",
+    "description": "The FloorRegionSelectorView will allow users to define the dance floor area by dragging four corner points of a quadrilateral. This view will store the points in a structure and draw the polygon as an overlay on the video feed.",
+    "requirements": [
+      "Implement drag functionality to allow users to move the corner points.",
+      "Store the corner points in a structure containing p1, p2, p3, and p4.",
+      "Draw the polygon based on the defined points."
+    ],
+    "acceptance_criteria": [
+      "Users can successfully drag the corner points to define the area.",
+      "The polygon is drawn accurately based on the corner points."
+    ],
+    "technical_notes": [
+      "Use gesture recognizers to handle dragging of points.",
+      "Ensure that the polygon updates in real-time as points are moved."
+    ]
+  },
+  {
+    "title": "Implement EnergyAnalyzer Class for Motion Detection",
+    "description": "The EnergyAnalyzer class will analyze video frames to detect motion energy per grid cell. It will convert frames to CIImage, downscale them, compute frame-to-frame differences, and sum motion per cell, outputting an EnergyGrid object.",
+    "requirements": [
+      "Receive frames and convert them to CIImage.",
+      "Downscale frames to a specified resolution (e.g., 160x90).",
+      "Compute frame-to-frame differences and divide results into grid cells.",
+      "Output an EnergyGrid object containing a 2D array of energy values."
+    ],
+    "acceptance_criteria": [
+      "Motion differences are computed correctly for each frame.",
+      "Energy values are accurately summed per grid cell."
+    ],
+    "technical_notes": [
+      "Optimize the downscaling process for performance.",
+      "Consider using CoreImage filters for efficient image processing."
+    ]
+  },
+  {
+    "title": "Create EnergyHeatmapOverlayView for Energy Visualization",
+    "description": "The EnergyHeatmapOverlayView will visualize the energy detected in each grid cell by drawing colored rectangles based on energy values. This view will toggle on/off for debugging purposes.",
+    "requirements": [
+      "Draw colored rectangles for each grid cell based on energy value (blue = low, yellow = medium, red = high).",
+      "Implement a toggle to show/hide the heatmap overlay."
+    ],
+    "acceptance_criteria": [
+      "The heatmap is displayed correctly based on energy values.",
+      "The toggle functionality works as expected."
+    ],
+    "technical_notes": [
+      "Use SwiftUI's drawing capabilities to render the heatmap.",
+      "Ensure that the heatmap updates in real-time as energy values change."
+    ]
+  },
+  {
+    "title": "Develop Main Layout for BangerVision App",
+    "description": "The main layout of the BangerVision app will consist of a ZStack containing the VideoRenderView, FloorRegionSelectorView, GridOverlayView, and optional EnergyHeatmapOverlayView. Additionally, a controls panel will be included for user interaction.",
+    "requirements": [
+      "Create a ZStack to hold the video render view, floor region selector, grid overlay, and heatmap overlay.",
+      "Implement a controls panel with source picker, grid size selector, heatmap toggle, and load test video button."
+    ],
+    "acceptance_criteria": [
+      "All components are displayed correctly in the main layout.",
+      "User interactions with the controls panel function as intended."
+    ],
+    "technical_notes": [
+      "Ensure that the layout is responsive and adapts to different iPad screen sizes.",
+      "Use SwiftUI's layout system to manage component positioning."
+    ]
+  },
+  {
+    "title": "Implement Development Milestone M1 - Basic Frame Playback",
+    "description": "Milestone M1 focuses on implementing basic frame playback functionality. This includes playing video from a file, displaying a static image source, and rendering frames on the screen. This milestone is critical for establishing the foundation of the app.",
+    "requirements": [
+      "Implement video playback from a file.",
+      "Display a static image source.",
+      "Render frames on the screen efficiently."
+    ],
+    "acceptance_criteria": [
+      "Video playback works without errors.",
+      "Static images are displayed correctly.",
+      "Frames are rendered smoothly on the screen."
+    ],
+    "technical_notes": [
+      "Test with various video file formats to ensure compatibility.",
+      "Optimize rendering performance to minimize latency."
+    ]
+  },
+  {
+    "title": "Implement Development Milestone M2 - Grid Overlay",
+    "description": "Milestone M2 involves implementing the grid overlay functionality. This includes drawing the grid based on user-defined rows and columns and allowing users to select the number of rows and columns dynamically.",
+    "requirements": [
+      "Implement grid drawing functionality.",
+      "Allow users to select the number of rows and columns."
+    ],
+    "acceptance_criteria": [
+      "The grid is displayed correctly over the video feed.",
+      "Users can change the number of rows and columns dynamically."
+    ],
+    "technical_notes": [
+      "Ensure that grid updates do not cause performance issues.",
+      "Test grid responsiveness with different video sizes."
+    ]
+  },
+  {
+    "title": "Implement Development Milestone M3 - Floor Region Selector",
+    "description": "Milestone M3 focuses on implementing the floor region selector functionality. Users will be able to drag four corner points of a quadrilateral to define the dance floor area. This includes correct drawing of the region and saving/restoring the region.",
+    "requirements": [
+      "Implement draggable four-point polygon functionality.",
+      "Ensure correct drawing of the defined region.",
+      "Implement save/restore functionality for the region."
+    ],
+    "acceptance_criteria": [
+      "Users can successfully drag the corner points to define the area.",
+      "The polygon is drawn accurately based on the corner points.",
+      "The defined region can be saved and restored."
+    ],
+    "technical_notes": [
+      "Use gesture recognizers to handle dragging of points.",
+      "Ensure that the polygon updates in real-time as points are moved."
+    ]
+  },
+  {
+    "title": "Implement Development Milestone M4 - Energy Analyzer",
+    "description": "Milestone M4 involves implementing the energy analyzer functionality. This includes computing motion differences per frame, outputting a motion grid, and logging results for debugging purposes.",
+    "requirements": [
+      "Compute motion differences per frame.",
+      "Output a motion grid based on energy values.",
+      "Log results for debugging."
+    ],
+    "acceptance_criteria": [
+      "Motion differences are computed correctly for each frame.",
+      "Energy values are accurately summed per grid cell.",
+      "Debug logs are generated correctly."
+    ],
+    "technical_notes": [
+      "Optimize the energy analysis process for performance.",
+      "Ensure that logging does not impact app performance."
+    ]
+  },
+  {
+    "title": "Implement Development Milestone M5 - Heatmap Overlay",
+    "description": "Milestone M5 focuses on implementing the heatmap overlay functionality. This includes drawing a color-coded heatmap per grid cell based on energy values and ensuring real-time updates on the screen.",
+    "requirements": [
+      "Implement color-coded heatmap drawing functionality.",
+      "Ensure real-time updates of the heatmap based on energy values."
+    ],
+    "acceptance_criteria": [
+      "The heatmap is displayed correctly based on energy values.",
+      "The heatmap updates in real-time as energy values change."
+    ],
+    "technical_notes": [
+      "Use SwiftUI's drawing capabilities to render the heatmap.",
+      "Ensure that the heatmap updates efficiently without performance degradation."
+    ]
+  },
+  {
+    "title": "Implement Development Milestone M6 - Live Camera Source",
+    "description": "Milestone M6 involves replacing the StubLiveSource with a real NDI/RTSP/iPhone stream. This must plug into the BVVideoSource interface with zero UI changes, ensuring a seamless transition from testing to live functionality.",
+    "requirements": [
+      "Implement live camera source functionality.",
+      "Ensure compatibility with the BVVideoSource interface."
+    ],
+    "acceptance_criteria": [
+      "The live camera feed can be displayed without UI changes.",
+      "The app functions correctly with the live source."
+    ],
+    "technical_notes": [
+      "Test with various live streaming protocols to ensure compatibility.",
+      "Ensure that the transition from stub to live source is smooth."
+    ]
+  },
+  {
+    "title": "Video Playback Module",
+    "description": "Handles video playback from various sources, including files and live streams.",
+    "requirements": [
+      "Implement playback controls for starting and stopping video.",
+      "Support multiple video formats and sources."
+    ],
+    "acceptance_criteria": [
+      "Video playback starts and stops without errors.",
+      "Different video formats play correctly."
+    ],
+    "technical_notes": [
+      "Utilize AVFoundation for video playback.",
+      "Ensure proper error handling for unsupported formats."
+    ]
+  },
+  {
+    "title": "Grid Overlay Module",
+    "description": "Responsible for drawing and updating the grid overlay on the video feed.",
+    "requirements": [
+      "Allow dynamic configuration of grid rows and columns.",
+      "Ensure grid adapts to video frame size."
+    ],
+    "acceptance_criteria": [
+      "Grid displays correctly over the video feed.",
+      "Users can change grid configuration dynamically."
+    ],
+    "technical_notes": [
+      "Use SwiftUI's drawing capabilities for rendering.",
+      "Optimize grid updates for performance."
+    ]
+  },
+  {
+    "title": "Dance Floor Area Selector Module",
+    "description": "Enables users to define the dance floor area by dragging points on the screen.",
+    "requirements": [
+      "Implement draggable corner points for polygon selection.",
+      "Store and retrieve the defined area."
+    ],
+    "acceptance_criteria": [
+      "Users can drag points to define the area.",
+      "The defined area is saved and restored correctly."
+    ],
+    "technical_notes": [
+      "Utilize gesture recognizers for point dragging.",
+      "Ensure real-time updates of the polygon."
+    ]
+  },
+  {
+    "title": "Energy Detection Module",
+    "description": "Analyzes video frames to detect motion energy and outputs energy values per grid cell.",
+    "requirements": [
+      "Process video frames to compute motion differences.",
+      "Output energy values in a structured format."
+    ],
+    "acceptance_criteria": [
+      "Energy values are computed accurately for each grid cell.",
+      "Results are logged for debugging purposes."
+    ],
+    "technical_notes": [
+      "Optimize frame processing for performance.",
+      "Consider using CoreImage for efficient image analysis."
+    ]
+  }
+]

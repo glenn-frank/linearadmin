@@ -1,0 +1,51 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+
+const Header: React.FC = () => {
+  const { user, logout } = useAuth();
+
+  return (
+    <header className="bg-white shadow-sm border-b">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          <Link to="/" className="text-xl font-bold text-primary-600">
+            {{appName}}
+          </Link>
+          
+          <nav className="flex items-center space-x-4">
+            {user ? (
+              <>
+                <Link to="/dashboard" className="text-gray-600 hover:text-gray-900">
+                  Dashboard
+                </Link>
+                <Link to="/profile" className="text-gray-600 hover:text-gray-900">
+                  Profile
+                </Link>
+                <button
+                  onClick={logout}
+                  className="btn-secondary"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/signin" className="text-gray-600 hover:text-gray-900">
+                  Sign In
+                </Link>
+                <Link to="/signup" className="btn-primary">
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
+
+

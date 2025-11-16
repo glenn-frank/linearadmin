@@ -1,0 +1,67 @@
+feat: Add GitHub MCP Server with PR automation (17 tools!)
+
+🚀 NEW: GitHub MCP Server
+
+Solves the manual PR review problem!
+
+The Problem:
+- Cursor creates multiple draft PRs
+- Manual review of each PR
+- Manual CI checking
+- Manual approval
+- Manual merging
+- Manual cleanup
+→ 30+ minutes of work
+
+The Solution:
+"Show draft PRs with CI status" → See all
+"Merge PRs that passed CI" → Done!
+→ 30 seconds automated!
+
+Tools (17 total):
+
+📋 Repository (2):
+- list_repos - List all repos
+- create_repo - Create new repo
+
+🔀 Pull Requests (6):
+- list_draft_prs - List DRAFT PRs ⭐ KEY TOOL
+- list_all_prs - List all PRs
+- get_pr_details - PR details + files + CI
+- mark_pr_ready - Draft → ready for review
+- approve_pr - Approve PR
+- merge_pr - Merge (merge/squash/rebase)
+
+✅ CI/Testing (2):
+- get_pr_ci_status - Check test results
+- batch_review_draft_prs - Batch review ⭐ KEY TOOL
+
+🌿 Branches (2):
+- list_branches - List all branches
+- delete_branch - Cleanup after merge
+
+⚙️ Workflows (2):
+- list_workflow_runs - See Actions runs
+- trigger_workflow - Trigger deployment
+
+📝 Issues (2):
+- create_github_issue - Create issue
+- list_github_issues - List issues
+
+🏷️ Releases (1):
+- create_release - Create release
+
+Usage:
+npm run mcp:github
+
+Example commands:
+"List my repos"
+"Show draft PRs in myapp"
+"Batch review draft PRs"
+"Approve PR #45"
+"Merge all PRs that passed CI"
+"Trigger deploy workflow"
+
+Complete automation guide in GITHUB_MCP_GUIDE.md
+
+Total MCP tools: 51 (21 Linear + 13 Forge + 17 GitHub)!

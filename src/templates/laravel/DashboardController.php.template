@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
+class DashboardController extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        $stats = [
+            'total_users' => \App\Models\User::count(),
+            'active_users' => \App\Models\User::where('is_active', true)->count(),
+            'recent_signups' => \App\Models\User::where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        return response()->json([
+            'user' => $user,
+            'stats' => $stats,
+        ]);
+    }
+}
+
+

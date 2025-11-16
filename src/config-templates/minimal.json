@@ -1,0 +1,35 @@
+{
+  "name": "Minimal Starter",
+  "description": "Minimal Laravel + React setup with just authentication and basic dashboard",
+  "template": {
+    "deploymentTarget": "local",
+    "localDatabaseType": "sqlite",
+    "useForgeStorage": false,
+    "enableAIDependencies": false,
+    "startDevelopment": false,
+    "rerunExistingIssues": false,
+    "createForgeSite": false,
+    "createNewProject": true,
+    "features": ["auth", "dashboard"],
+    "repoSubfolder": "frontend"
+  },
+  "customIssues": [
+    {
+      "title": "Setup Basic Authentication",
+      "description": "Implement login and registration with Sanctum",
+      "priority": 1,
+      "labels": ["backend", "auth"],
+      "category": "backend",
+      "complexity": "medium"
+    },
+    {
+      "title": "Create Simple Dashboard",
+      "description": "Basic dashboard with user info and navigation",
+      "priority": 2,
+      "labels": ["frontend", "ui"],
+      "category": "frontend",
+      "complexity": "low"
+    }
+  ]
+}
+

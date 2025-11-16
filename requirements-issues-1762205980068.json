@@ -1,0 +1,344 @@
+[
+  {
+    "title": "Implement Audio Fingerprinting System",
+    "description": "The current system lacks the capability to identify and correlate audio tracks in real-time, which affects user experience and analytics accuracy. The goal is to implement an audio fingerprinting system that detects track title, primary artists, confidence score, and detection timestamp, while ensuring low latency and high stability.",
+    "requirements": [
+      "Detect track title, primary artists, confidence score, and detection timestamp.",
+      "Support selectable audio input device; persist selection per device/profile.",
+      "Provide status: inactive/initializing/active/error; show current RMS level.",
+      "Expose callbacks/events to timeline correlation and analytics (e.g., track change markers).",
+      "Debounce spurious detections; configurable minimum track duration before confirmation.",
+      "Persist detections to local DB and show in session analytics timeline."
+    ],
+    "acceptance_criteria": [
+      "When audio input is enabled and a clear steady input is present, the system emits a track detection with title/artist/confidence and timestamps it to the current session.",
+      "When input device changes mid-session, detection resumes automatically without app restart.",
+      "When confidence is below threshold, no track is confirmed and no timeline marker is created.",
+      "When a new track is detected, a distinct marker is visible in analytics within 2 seconds."
+    ],
+    "technical_notes": [
+      "Use a library like Chromaprint for audio fingerprinting.",
+      "Implement a state machine to manage audio input states.",
+      "Use SQLite for local persistence of detections.",
+      "Ensure the system can handle multiple audio input devices and persist user preferences.",
+      "Implement debouncing logic to avoid false positives in track detection."
+    ]
+  },
+  {
+    "title": "Implement Director Preview Per-Camera Recording System",
+    "description": "The current system does not support independent recording from multiple cameras, which limits flexibility in video production. The goal is to implement a system that allows for independent recording from multiple cameras, with status updates and segment saving capabilities.",
+    "requirements": [
+      "Add camera: enumerate devices, select, preview; save friendly label.",
+      "Per-camera REC/STOP: start/stop writing video segments to disk with unique IDs linked to session.",
+      "Show per-camera state (READY/RECORDING/ERROR), elapsed time, estimated size.",
+      "Persist segments with metadata: format, resolution, fps, bitrate, start/end time (ns), file size, checksum.",
+      "Stop all cameras on session end; handle failures per camera without aborting session."
+    ],
+    "acceptance_criteria": [
+      "Starting REC on any camera creates a VideoSegment record with non-empty file path and real bytes on disk.",
+      "Stopping REC updates segment end time and file size; status transitions to active.",
+      "If a camera disconnects, its segment is finalized with status=error and other cameras continue."
+    ],
+    "technical_notes": [
+      "Use FFmpeg for video encoding and segmenting.",
+      "Implement a state management system to track camera statuses.",
+      "Ensure that metadata is stored in a structured format in the database.",
+      "Implement error handling to finalize segments properly in case of disconnections."
+    ]
+  },
+  {
+    "title": "Implement Multi-Camera Synchronization & Ingest System",
+    "description": "Currently, there is no mechanism to synchronize video segments from different cameras, which can lead to disjointed analytics. The goal is to implement a synchronization system that aligns video segments from different cameras to the same timeline.",
+    "requirements": [
+      "Capture per-segment start_time_ns referenced to session start (or absolute time).",
+      "Maintain sync metadata (first/last frame timestamps, frame count, optional frame sync points).",
+      "API: query segment covering any given session timestamp; compute relative ms inside file."
+    ],
+    "acceptance_criteria": [
+      "For two cameras started within the same session, querying a timestamp in the overlapping range returns both segments with consistent relative times (±1 frame at 30fps).",
+      "For gaps between segments, API returns 'no coverage' clearly."
+    ],
+    "technical_notes": [
+      "Implement a synchronization algorithm that aligns timestamps across segments.",
+      "Use a database schema that supports storing sync metadata efficiently.",
+      "Create an API endpoint that allows querying segments based on timestamps."
+    ]
+  },
+  {
+    "title": "Implement Web Persistence Fallback for Session Analytics",
+    "description": "The current system relies on Electron for session analytics, which limits functionality in web environments. The goal is to implement a fallback mechanism that allows core session analytics to persist without Electron.",
+    "requirements": [
+      "When window.bangerVisionAPI is absent, persist analytics/pose data to IndexedDB/WASM SQLite.",
+      "Single abstraction to read/write, selecting Electron DB or web DB at runtime."
+    ],
+    "acceptance_criteria": [
+      "In browser mode, starting/stopping recording produces analytics entries retrievable after reload.",
+      "Switching to Electron uses the same DAO shape; no code changes in calling sites."
+    ],
+    "technical_notes": [
+      "Use IndexedDB for web persistence and implement a fallback to WASM SQLite.",
+      "Abstract the data access layer to switch between Electron and web storage seamlessly.",
+      "Ensure that data integrity is maintained during transitions between storage types."
+    ]
+  },
+  {
+    "title": "Implement Session Start/Stop and Navigation Policy",
+    "description": "The current session management lacks a standardized user experience for starting and stopping recordings. The goal is to standardize the recording UX by implementing a clear session start/stop policy.",
+    "requirements": [
+      "Default in-app route for recording; optionally allow 'Open in new window' toggle.",
+      "If popup is used, message channel must deliver session metadata and any uploaded file paths back to the main window; handle window close gracefully."
+    ],
+    "acceptance_criteria": [
+      "Default 'Start New Session' routes in-app and succeeds without postMessage.",
+      "If 'Open in new window' is enabled, stopping a recording posts back and session list shows it within 2 seconds."
+    ],
+    "technical_notes": [
+      "Implement a routing mechanism that handles in-app and popup sessions.",
+      "Use postMessage API for communication between windows.",
+      "Ensure that session metadata is correctly passed and handled in both contexts."
+    ]
+  },
+  {
+    "title": "Implement Analytics Enhancements for Signal Quality",
+    "description": "The current analytics system does not provide sufficient insights into signal quality and user engagement. The goal is to enhance analytics with features that improve signal quality and insights.",
+    "requirements": [
+      "Jump detection: detect spikes in vertical motion; expose count and peak periods.",
+      "Hotspots: grid-based intensity map (x,y,intensity) updated per interval.",
+      "Crowd flow: vector field of movement between grid cells per interval.",
+      "Smoothing and calibration: configurable smoothing windows; per-venue sensitivity presets.",
+      "Peak detection: flag peak moments with type and duration; surface in legacy analytics UI."
+    ],
+    "acceptance_criteria": [
+      "Enabling hotspots produces a heat map dataset per time bucket; disabled removes it from storage and UI.",
+      "Peak moments appear in analytics with start/end timestamps and remain consistent across reloads.",
+      "Adjusting sensitivity impacts resulting energy levels within defined bounds (documented)."
+    ],
+    "technical_notes": [
+      "Implement algorithms for jump detection and crowd flow analysis.",
+      "Use a grid-based approach for hotspot detection and visualization.",
+      "Ensure that analytics data is stored efficiently for quick retrieval and processing."
+    ]
+  },
+  {
+    "title": "Implement Serato Track Correlation System",
+    "description": "The current system does not align detected track events with analytics, leading to discrepancies in user engagement metrics. The goal is to implement a system that correlates detected tracks with Serato analytics.",
+    "requirements": [
+      "Ingest current track, BPM, key, cue points, start/end timestamps.",
+      "Render track lanes and markers in analytics; compute per-track engagement summary.",
+      "Resolve conflicts: when audio fingerprinting and Serato disagree, prefer Serato with a flag."
+    ],
+    "acceptance_criteria": [
+      "Track start updates analytics view with a marker and displays track metadata.",
+      "Per-track summary shows avg energy, peak energy, and audience count deltas during the track."
+    ],
+    "technical_notes": [
+      "Implement a data ingestion pipeline for Serato track data.",
+      "Create a visualization layer for rendering track lanes and markers.",
+      "Ensure that conflict resolution logic is clearly defined and implemented."
+    ]
+  },
+  {
+    "title": "Implement Export and Sharing Features",
+    "description": "The current system lacks robust export and sharing capabilities for session insights and raw data. The goal is to implement features that allow users to export session reports, raw analytics, and video clips.",
+    "requirements": [
+      "Export session report (PDF): summary stats, top peaks, per-track metrics, key charts.",
+      "Export raw analytics (CSV/JSON): timeline (timestamp, people, energy, sentiment, movement).",
+      "Export video clips: select time range; export merged video (main camera) with optional overlay."
+    ],
+    "acceptance_criteria": [
+      "Exported report includes session name, venue, duration, counts, and at least one engagement chart.",
+      "CSV contains a header row and at least timestamp + 4 metrics; values match UI within rounding tolerance.",
+      "Video export succeeds for a 60-second range and produces a playable file."
+    ],
+    "technical_notes": [
+      "Use libraries like jsPDF for PDF generation and PapaParse for CSV export.",
+      "Implement a video processing pipeline for merging and exporting clips.",
+      "Ensure that all exported data maintains consistency with the UI."
+    ]
+  },
+  {
+    "title": "Implement Storage Management and Media Lifecycle",
+    "description": "The current system does not effectively manage disk usage and media assets, leading to potential storage issues. The goal is to implement a storage management system that controls disk usage and manages media lifecycle.",
+    "requirements": [
+      "Thumbnails and preview generation on segment finalize.",
+      "Archiving policy: mark segments archived and exclude from default queries.",
+      "Cleanup tools: remove segments by age/size; validate missing files and mark status=deleted."
+    ],
+    "acceptance_criteria": [
+      "After recording, a thumbnail file exists and is referenced in DB metadata.",
+      "Running cleanup with a threshold removes files over limit and updates DB status accordingly."
+    ],
+    "technical_notes": [
+      "Implement a thumbnail generation process using FFmpeg.",
+      "Create a cleanup utility that can be scheduled or triggered manually.",
+      "Ensure that the archiving policy is configurable and easily adjustable."
+    ]
+  },
+  {
+    "title": "Implement Settings and Configuration Management",
+    "description": "The current system lacks a centralized configuration management system, which complicates user experience. The goal is to centralize operational controls for camera, audio device defaults, and other settings.",
+    "requirements": [
+      "Camera & audio device defaults per profile.",
+      "Detection settings: model/sensitivity, smoothing windows, max tracked people.",
+      "Storage paths (Electron only), export formats, privacy settings (data retention)."
+    ],
+    "acceptance_criteria": [
+      "Changing sensitivity from Balanced to Conservative updates values used by pose detector immediately.",
+      "Updating storage path migrates newly created segments; old segments remain referenced."
+    ],
+    "technical_notes": [
+      "Implement a settings management system that allows for profile-based configurations.",
+      "Ensure that changes to settings are applied in real-time where applicable.",
+      "Use a structured format for storing settings, such as JSON."
+    ]
+  },
+  {
+    "title": "Implement Permissions, Onboarding, and Error Handling",
+    "description": "The current onboarding process lacks clarity and robustness, leading to user frustration. The goal is to implement clear permission prompts and error handling mechanisms for a better user experience.",
+    "requirements": [
+      "Clear permission prompts with retry guidance for camera/mic.",
+      "Error states for device unavailable, model load failure, disk full; visible and logged."
+    ],
+    "acceptance_criteria": [
+      "If camera permission is denied, an actionable error with retry appears and no recording controls are active.",
+      "If disk is full mid-recording, UI stops gracefully and finalizes segments with error status."
+    ],
+    "technical_notes": [
+      "Implement a permission request flow that is user-friendly and informative.",
+      "Create a logging system for error states that can be reviewed by support.",
+      "Ensure that error handling does not disrupt the overall user experience."
+    ]
+  },
+  {
+    "title": "Implement Performance and Resilience Targets",
+    "description": "The current system does not meet performance and stability targets, which can lead to degraded user experience. The goal is to implement performance and resilience measures that ensure smooth operation under load.",
+    "requirements": [
+      "Target FPS for pose detection: 15+ fps on mid-range hardware; degrade gracefully with frame skipping.",
+      "Memory ceiling: sustained recording ≤ 1.5 GB RSS increase over idle for 60 minutes with two cameras."
+    ],
+    "acceptance_criteria": [
+      "Under normal conditions, FPS metric shown stays ≥ target; if under, frame-skip increases automatically.",
+      "Long-run soak test completes without crash; segments finalize correctly."
+    ],
+    "technical_notes": [
+      "Implement performance monitoring tools to track FPS and memory usage.",
+      "Use profiling tools to identify and optimize bottlenecks in the code.",
+      "Ensure that the system can handle peak loads without crashing or degrading performance."
+    ]
+  },
+  {
+    "title": "Implement Accessibility and UX Standards",
+    "description": "The current UI does not meet accessibility standards, which can exclude users with disabilities. The goal is to implement accessibility features that ensure an inclusive and predictable user experience.",
+    "requirements": [
+      "Keyboard operation for core controls (Record/Stop, device dropdowns, tabs).",
+      "High-contrast option for overlays; tooltips for status icons."
+    ],
+    "acceptance_criteria": [
+      "Tabbing reaches Record/Stop and toggles via Enter/Space.",
+      "Enabling high contrast changes overlay color palette accordingly."
+    ],
+    "technical_notes": [
+      "Follow WCAG guidelines for accessibility in UI design.",
+      "Implement ARIA roles and properties for better screen reader support.",
+      "Test the UI with various accessibility tools to ensure compliance."
+    ]
+  },
+  {
+    "title": "Implement QA, Diagnostics, and Telemetry (Local)",
+    "description": "The current system lacks robust diagnostic and telemetry features, which can hinder support and debugging efforts. The goal is to implement local diagnostics and telemetry to assist in troubleshooting.",
+    "requirements": [
+      "Local diagnostic log viewer; log rotation.",
+      "Optional anonymous local metrics (no network) for performance counters."
+    ],
+    "acceptance_criteria": [
+      "Log viewer filters by level/component and shows last N MB.",
+      "Enabling metrics displays graphs locally; disabling halts collection."
+    ],
+    "technical_notes": [
+      "Implement a logging framework that supports different log levels.",
+      "Create a local viewer for logs that can filter and display relevant information.",
+      "Ensure that metrics collection is efficient and does not impact performance."
+    ]
+  },
+  {
+    "title": "Implement Security and Privacy Controls",
+    "description": "The current system does not adequately respect user data control and privacy. The goal is to implement security and privacy features that ensure user data is handled responsibly.",
+    "requirements": [
+      "Data retention policy with configurable duration; 'Delete all session data' per session and globally.",
+      "No exports without explicit user action; no background uploads."
+    ],
+    "acceptance_criteria": [
+      "Deleting a session removes analytics and marks/optionally deletes associated segments; UI confirms."
+    ],
+    "technical_notes": [
+      "Implement a data retention policy that is configurable by the user.",
+      "Ensure that all data exports require user confirmation.",
+      "Use encryption for sensitive data storage and transmission."
+    ]
+  },
+  {
+    "title": "Audio Detection Module",
+    "description": "Handles the detection of audio tracks, including title, artist, and confidence score.",
+    "requirements": [
+      "Detect track title, primary artists, confidence score, and detection timestamp.",
+      "Debounce spurious detections; configurable minimum track duration before confirmation.",
+      "Expose callbacks/events for analytics."
+    ],
+    "acceptance_criteria": [
+      "Track detection occurs with correct metadata when audio input is present.",
+      "No false positives are recorded below the confidence threshold."
+    ],
+    "technical_notes": [
+      "Utilize Chromaprint for audio fingerprinting.",
+      "Implement debouncing logic to avoid false positives."
+    ]
+  },
+  {
+    "title": "Audio Input Management Module",
+    "description": "Manages audio input devices and user preferences for audio detection.",
+    "requirements": [
+      "Support selectable audio input device; persist selection per device/profile.",
+      "Provide status: inactive/initializing/active/error."
+    ],
+    "acceptance_criteria": [
+      "Input device changes are recognized and persist across sessions.",
+      "Status updates reflect the current state of the audio input."
+    ],
+    "technical_notes": [
+      "Ensure the system can handle multiple audio input devices.",
+      "Implement a state machine for managing audio input states."
+    ]
+  },
+  {
+    "title": "Local Database Persistence Module",
+    "description": "Handles the persistence of detected audio tracks and session analytics to a local database.",
+    "requirements": [
+      "Persist detections to local DB.",
+      "Show detections in session analytics timeline."
+    ],
+    "acceptance_criteria": [
+      "Detections are retrievable from the local database after a session ends.",
+      "Analytics timeline reflects all confirmed detections."
+    ],
+    "technical_notes": [
+      "Use SQLite for local persistence.",
+      "Ensure data integrity during writes to the database."
+    ]
+  },
+  {
+    "title": "Analytics Callback Module",
+    "description": "Exposes callbacks and events for timeline correlation and analytics.",
+    "requirements": [
+      "Provide events for track change markers.",
+      "Integrate with existing analytics systems."
+    ],
+    "acceptance_criteria": [
+      "Callbacks are triggered correctly when a track change occurs.",
+      "Analytics systems receive and process events without delay."
+    ],
+    "technical_notes": [
+      "Implement a robust event handling system for analytics integration.",
+      "Ensure low latency in event processing."
+    ]
+  }
+]

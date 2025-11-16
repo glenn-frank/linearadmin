@@ -1,0 +1,287 @@
+# Linear Issue Management Rules for AI Agents
+
+## CRITICAL: Repository Context
+
+### Every Issue Has a Repo Label
+
+**ALL issues are labeled with their repository in format: `glenn-frank/[team-name]`**
+
+**This tells you which codebase to work in:**
+- Issue labeled `glenn-frank/taskmanager` → Work in ~/path/to/taskmanager repo
+- Issue labeled `glenn-frank/scheduleapp` → Work in ~/path/to/scheduleapp repo
+
+**Before starting ANY issue:**
+1. Check the repo label (format: `glenn-frank/[repo-name]`)
+2. Ensure you're in the correct repository directory
+3. If in wrong repo, stop and tell user
+
+**Example:**
+```
+User: "Work on issue #123"
+
+YOU MUST:
+1. Get issue details
+2. Check labels for repo: "glenn-frank/myapp"
+3. Verify current directory matches repo
+4. If wrong repo: "Issue #123 is for glenn-frank/myapp but you're in different repo. Navigate to correct repo first."
+5. If correct repo: Proceed with work
+```
+
+---
+
+## CRITICAL: Dependency Management
+
+### Before Starting ANY Issue
+
+**YOU MUST ALWAYS:**
+
+1. Check if the issue has blockers: `check_issue_blockers`
+2. If blocked: STOP immediately and report to user
+3. If unblocked: Proceed with work
+
+**NEVER start work on blocked issues.**
+
+---
+
+## Rule 1: Always Check Blockers First
+
+```
+User: "Work on issue #125"
+
+YOU MUST:
+1. Call: check_issue_blockers(#125)
+2. If blocked:
+   Response: "⛔ Cannot start #125. It's blocked by:
+   - #124: Setup Database (In Progress)
+   
+   Would you like to work on #124 instead?"
+3. If not blocked:
+   Response: "✅ No blockers. Starting work on #125..."
+```
+
+---
+
+## Rule 2: Search for Duplicates Before Creating
+
+**Before creating ANY issue:**
+
+1. Search existing issues using `search_issues`
+2. Check title AND description
+3. Include ALL states (even Done/Canceled)
+4. If similar issue found: ASK USER before creating
+
+```
+User: "Create an issue for dev environment setup"
+
+YOU MUST:
+1. Call: search_issues(teamId, "development environment setup")
+2. If found: 
+   Response: "Found existing issue #12: Setup Development Environment (Done).
+   This may be a duplicate. Would you like to:
+   - Reopen issue #12?
+   - Create new issue anyway?
+   - Skip?"
+3. If not found:
+   Response: "No duplicates found. Creating issue..."
+```
+
+---
+
+## Rule 3: Use Dependencies for Related Issues
+
+**When creating multiple related issues:**
+
+ALWAYS use `create_issues_with_dependencies` instead of `create_bulk_issues`.
+
+```
+User: "Create issues for building authentication"
+
+YOU MUST use:
+create_issues_with_dependencies({
+  teamId: "...",
+  issues: [
+    { title: "Setup database schema" },           // Index 0
+    { title: "Create User model", blockedBy: [0] }, // Index 1 - needs 0 first
+    { title: "Add authentication", blockedBy: [1] } // Index 2 - needs 1 first
+  ]
+})
+
+NOT create_bulk_issues (which ignores dependencies).
+```
+
+---
+
+## Rule 4: Finding Available Work
+
+**When user asks "what can I work on":**
+
+ALWAYS use `get_next_available_issues` (not `get_team_issues`).
+
+This returns ONLY unblocked issues that are safe to start.
+
+```
+User: "What should I work on?"
+
+YOU MUST:
+Call: get_next_available_issues(teamId)
+
+Response: "Ready to work on:
+- #101: Setup database (no dependencies)
+- #87: Update docs (no dependencies)
+
+Blocked issues:
+- #102: Create models (blocked by #101)
+- #103: Add auth (blocked by #102)"
+```
+
+---
+
+## Rule 5: When Completing Issues
+
+**After closing/completing an issue:**
+
+1. Check what it unblocks: `get_issue_dependencies`
+2. Tell user what's now available
+
+```
+User: "Close issue #101"
+
+YOU MUST:
+1. Call: close_issue(#101)
+2. Call: get_issue_dependencies(#101)
+3. Response: "✅ #101 closed.
+   
+   This unblocked:
+   - #102: Create User model (now ready to start!)"
+```
+
+---
+
+## Rule 6: Creating Issues with Order
+
+**When user says "create these in order" or "create dependencies":**
+
+```
+User: "Create these issues in order:
+1. Setup environment
+2. Configure database  
+3. Create models"
+
+YOU MUST use create_issues_with_dependencies:
+{
+  issues: [
+    { title: "Setup environment" },              // 0
+    { title: "Configure database", blockedBy: [0] },  // 1
+    { title: "Create models", blockedBy: [1] }        // 2
+  ]
+}
+
+NEVER create without blockedBy when order matters.
+```
+
+---
+
+## Common Patterns to Recognize
+
+### Pattern: "In Order" / "Sequence" / "First Then"
+→ Use `create_issues_with_dependencies` with blockedBy
+
+### Pattern: "Before" / "After" / "Depends On"
+→ Set up blocking relationship
+
+### Pattern: "Can I work on X?"
+→ Use `check_issue_blockers` first
+
+### Pattern: "What's next?"
+→ Use `get_next_available_issues`
+
+---
+
+## Examples: What NOT to Do
+
+❌ **BAD: Creating without checking:**
+```
+User: "Create issue for authentication"
+Agent: [Creates #125]
+// But #50 "Add Authentication System" already exists!
+```
+
+❌ **BAD: Starting blocked work:**
+```
+User: "Work on #125"
+Agent: [Starts work]
+// But #125 is blocked by incomplete #124!
+```
+
+❌ **BAD: Creating unrelated issues:**
+```
+User: "Create setup, database, and auth issues"
+Agent: [Creates 3 issues with no dependencies]
+// They should be sequential!
+```
+
+---
+
+## Examples: What TO Do
+
+✅ **GOOD: Check then create:**
+```
+User: "Create issue for authentication"
+Agent: 
+1. [search_issues "authentication"]
+2. Found #50 (Done)
+3. "Issue #50 about authentication exists (completed). Create new anyway?"
+```
+
+✅ **GOOD: Check blockers:**
+```
+User: "Work on #125"
+Agent:
+1. [check_issue_blockers #125]
+2. Blocked by #124
+3. "Cannot start #125. Blocked by #124 (In Progress). Work on #124 instead?"
+```
+
+✅ **GOOD: Create with dependencies:**
+```
+User: "Create setup, database, and auth issues in order"
+Agent: [create_issues_with_dependencies with blockedBy]
+Created:
+- #126: Setup (ready)
+- #127: Database (blocked by #126)
+- #128: Auth (blocked by #127)
+```
+
+---
+
+## Quick Reference
+
+| User Says                  | You Must Do                                  |
+| -------------------------- | -------------------------------------------- |
+| "Create issue..."          | → search_issues first, ask if duplicate      |
+| "Work on #X"               | → check_issue_blockers first                 |
+| "What can I work on?"      | → get_next_available_issues                  |
+| "Create X, Y, Z in order"  | → create_issues_with_dependencies            |
+| "Close issue #X"           | → get_issue_dependencies, report what's next |
+| "Show dependencies for #X" | → get_issue_dependencies                     |
+
+---
+
+## Summary
+
+**ALWAYS:**
+- ✅ Check for blockers before starting work
+- ✅ Search for duplicates before creating
+- ✅ Use dependencies for sequential work
+- ✅ Report what's unblocked after completion
+
+**NEVER:**
+- ❌ Start blocked issues
+- ❌ Create duplicates without asking
+- ❌ Ignore dependency relationships
+- ❌ Create sequential issues without blockedBy
+
+---
+
+**These rules ensure proper workflow and prevent wasted work.** 🎯
+

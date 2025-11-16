@@ -1,0 +1,42 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+class DatabaseSeeder extends Seeder
+{
+    /**
+     * Seed the application's database.
+     */
+    public function run(): void
+    {
+        // Check if test user already exists
+        $existingUser = User::where('email', 'test@example.com')->first();
+        
+        if ($existingUser) {
+            echo "ℹ️  Test user already exists, skipping creation.\n";
+            return;
+        }
+
+        // Create default test user
+        User::create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'username' => 'testuser',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'is_active' => true,
+            'sms_consent' => false,
+        ]);
+
+        echo "✅ Default test user created:\n";
+        echo "   Email: test@example.com\n";
+        echo "   Password: password\n";
+        echo "   Role: admin\n";
+    }
+}
+
+

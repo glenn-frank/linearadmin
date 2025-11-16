@@ -1,0 +1,76 @@
+{
+  "name": "SaaS Application",
+  "description": "Multi-tenant SaaS platform with subscriptions, teams, and role-based permissions",
+  "template": {
+    "deploymentTarget": "both",
+    "localDatabaseType": "postgresql",
+    "databaseType": "forge-postgresql",
+    "useForgeStorage": true,
+    "enableAIDependencies": true,
+    "startDevelopment": true,
+    "rerunExistingIssues": false,
+    "createForgeSite": true,
+    "createNewProject": true,
+    "features": ["auth", "profile", "dashboard", "upload", "email", "docs"],
+    "repoSubfolder": "frontend"
+  },
+  "customIssues": [
+    {
+      "title": "Implement Multi-Tenancy",
+      "description": "Tenant isolation with separate schemas or row-level security",
+      "priority": 1,
+      "labels": ["backend", "architecture"],
+      "category": "backend",
+      "complexity": "high"
+    },
+    {
+      "title": "Create Subscription System",
+      "description": "Plans, billing, and subscription management with Stripe",
+      "priority": 1,
+      "labels": ["backend", "billing"],
+      "category": "backend",
+      "complexity": "high"
+    },
+    {
+      "title": "Build Team Management",
+      "description": "Teams, invitations, and member management",
+      "priority": 2,
+      "labels": ["backend", "frontend", "teams"],
+      "category": "backend",
+      "complexity": "high"
+    },
+    {
+      "title": "Implement Role-Based Access Control",
+      "description": "Roles and permissions system with granular access control",
+      "priority": 2,
+      "labels": ["backend", "security"],
+      "category": "backend",
+      "complexity": "high"
+    },
+    {
+      "title": "Create API Key Management",
+      "description": "API keys for third-party integrations with rate limiting",
+      "priority": 3,
+      "labels": ["backend", "api"],
+      "category": "backend",
+      "complexity": "medium"
+    },
+    {
+      "title": "Build Admin Dashboard",
+      "description": "Analytics, user management, and system monitoring",
+      "priority": 3,
+      "labels": ["frontend", "admin"],
+      "category": "frontend",
+      "complexity": "high"
+    },
+    {
+      "title": "Implement Onboarding Flow",
+      "description": "User onboarding with setup wizard and tutorials",
+      "priority": 2,
+      "labels": ["frontend", "ux"],
+      "category": "frontend",
+      "complexity": "medium"
+    }
+  ]
+}
+

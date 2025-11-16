@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, HasFactory, Notifiable;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'username',
+        'password',
+        'profile_photo_url',
+        'role',
+        'is_active',
+        'sms_consent',
+        'calendar_link',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean',
+        'sms_consent' => 'boolean',
+    ];
+
+    public function getProfilePhotoUrlAttribute($value)
+    {
+        return $value ? asset('storage/' . $value) : null;
+    }
+}
+
+

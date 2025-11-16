@@ -1,0 +1,207 @@
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import { apiClient } from '../../services/api';
+
+interface DashboardStats {
+  total_users: number;
+  active_users: number;
+  recent_signups: number;
+}
+
+const Dashboard: React.FC = () => {
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await apiClient.get('/dashboard');
+      // apiClient returns response.data already
+      setStats((response as any).stats);
+    } catch (err: any) {
+      // Show sample placeholders so the page isn't blank
+      setStats({ total_users: 1, active_users: 1, recent_signups: 1 });
+      setError('Showing sample data');
+      console.error('Dashboard error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Welcome back, {user?.name}!
+        </p>
+      </div>
+
+      {error && (
+        <div className="rounded-md bg-red-50 p-4">
+          <div className="text-sm text-red-800">{error}</div>
+        </div>
+      )}
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-6 w-6 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total Users</dt>
+                  <dd className="text-3xl font-semibold text-gray-900">
+                    {stats?.total_users || 0}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-6 w-6 text-green-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Active Users</dt>
+                  <dd className="text-3xl font-semibold text-gray-900">
+                    {stats?.active_users || 0}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-6 w-6 text-blue-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                  />
+                </svg>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Recent Signups</dt>
+                  <dd className="text-3xl font-semibold text-gray-900">
+                    {stats?.recent_signups || 0}
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <h3 className="text-lg font-medium leading-6 text-gray-900">Quick Actions</h3>
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Link
+              to="/profile"
+              className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
+            >
+              <div className="flex-1 min-w-0">
+                <span className="absolute inset-0" aria-hidden="true" />
+                <p className="text-sm font-medium text-gray-900">Edit Profile</p>
+                <p className="text-sm text-gray-500 truncate">Update your profile information</p>
+              </div>
+            </Link>
+
+            <button className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">Settings</p>
+                <p className="text-sm text-gray-500 truncate">Configure app settings</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* User Info */}
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <h3 className="text-lg font-medium leading-6 text-gray-900">Your Account</h3>
+          <div className="mt-5">
+            <dl className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Email</dt>
+                <dd className="mt-1 text-sm text-gray-900">{user?.email}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Username</dt>
+                <dd className="mt-1 text-sm text-gray-900">{user?.username}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Role</dt>
+                <dd className="mt-1 text-sm text-gray-900 capitalize">{user?.role}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
+
+

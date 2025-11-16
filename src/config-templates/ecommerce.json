@@ -1,0 +1,68 @@
+{
+  "name": "E-commerce Platform",
+  "description": "Full-featured e-commerce platform with products, cart, checkout, and payment processing",
+  "template": {
+    "deploymentTarget": "forge",
+    "localDatabaseType": "postgresql",
+    "databaseType": "forge-postgresql",
+    "useForgeStorage": true,
+    "enableAIDependencies": true,
+    "startDevelopment": true,
+    "rerunExistingIssues": false,
+    "createForgeSite": true,
+    "createNewProject": true,
+    "features": ["auth", "profile", "dashboard", "upload", "email", "docs"],
+    "repoSubfolder": "frontend"
+  },
+  "customIssues": [
+    {
+      "title": "Create Product Catalog System",
+      "description": "Product models with categories, variants, inventory tracking",
+      "priority": 1,
+      "labels": ["backend", "core"],
+      "category": "backend",
+      "complexity": "high"
+    },
+    {
+      "title": "Implement Shopping Cart",
+      "description": "Session-based cart with add/remove/update quantity functionality",
+      "priority": 2,
+      "labels": ["backend", "cart"],
+      "category": "backend",
+      "complexity": "medium"
+    },
+    {
+      "title": "Build Checkout Flow",
+      "description": "Multi-step checkout with shipping, billing, and payment",
+      "priority": 2,
+      "labels": ["backend", "frontend", "payment"],
+      "category": "backend",
+      "complexity": "high"
+    },
+    {
+      "title": "Integrate Payment Gateway",
+      "description": "Stripe integration for payment processing",
+      "priority": 3,
+      "labels": ["backend", "payment", "integration"],
+      "category": "backend",
+      "complexity": "high"
+    },
+    {
+      "title": "Create Order Management",
+      "description": "Order tracking, status updates, and admin dashboard",
+      "priority": 3,
+      "labels": ["backend", "admin"],
+      "category": "backend",
+      "complexity": "high"
+    },
+    {
+      "title": "Build Product Pages",
+      "description": "Product detail pages with images, reviews, and related products",
+      "priority": 2,
+      "labels": ["frontend", "ui"],
+      "category": "frontend",
+      "complexity": "medium"
+    }
+  ]
+}
+
