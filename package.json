@@ -9,6 +9,7 @@
     "mcp:linear": "npx tsx src/mcp-server.ts",
     "mcp:forge": "npx tsx src/mcp-forge-server.ts",
     "mcp:github": "npx tsx src/mcp-github-server.ts",
+    "mcp:cloud": "npx tsx src/mcp-cloud-server.ts",
     "mcp:server": "npx tsx src/mcp-server.ts",
     "start": "echo \"🚀 Linear Admin Toolkit\\n\\n📋 App Creators:\\n  npm run create-nextjs-app  - Create Next.js app (AI-optimized!) ⚡\\n  npm run create-laravel-app - Create Laravel + React app\\n\\n🤖 MCP Servers:\\n  npm run mcp:linear      - Linear MCP (21 tools - issue management)\\n  npm run mcp:forge       - Forge MCP (13 tools - deployment)\\n  npm run mcp:github      - GitHub MCP (17 tools - PR automation!) 🆕\\n\\n📋 CLI Commands (Admin & Utilities):\\n  npm run duplicate       - Duplicate Linear team\\n  npm run backup-team     - Backup Linear team to JSON\\n  npm run requirements    - Parse requirements document into issues\\n  npm run video           - Process feedback video into issues\\n  npm run relabel         - Preview AI-powered label suggestions\\n  npm run find-orphans    - Find issues without projects\\n  npm run list-projects   - List all team projects\\n\\nFor complete guide, see USAGE_GUIDE.md\"",
     "relabel": "npx tsx src/relabel-issues.ts --preview",
